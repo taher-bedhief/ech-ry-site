@@ -6,18 +6,26 @@ pipeline {
         DOCKER_MIGRATION_IMAGE_NAME = 'taher2bedhief/echry-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GIT_BRANCH = "main"
+        TRIVY_RESULTS_DIR = "trivy-results"
+    }
+
+    options {
+        timestamps()
+        ansiColor('xterm')
     }
 
     stages {
         stage('Cleanup Workspace') {
             steps {
                 deleteDir()
+                echo "Workspace nettoyé"
             }
         }
 
         stage('Clone Repository') {
             steps {
                 git branch: "${env.GIT_BRANCH}", url: 'https://github.com/taher-bedhief/ech-ry-site.git'
+                echo "Dépôt cloné depuis GitHub"
             }
         }
 
@@ -59,11 +67,11 @@ pipeline {
         stage('Security Scan with Trivy') {
             steps {
                 sh """
-                    mkdir -p trivy-results
-                    trivy image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > trivy-results/app.txt
-                    trivy image ${DOCKER_MIGRATION_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > trivy-results/migration.txt
+                    mkdir -p ${TRIVY_RESULTS_DIR}
+                    trivy image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > ${TRIVY_RESULTS_DIR}/app.txt
+                    trivy image ${DOCKER_MIGRATION_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > ${TRIVY_RESULTS_DIR}/migration.txt
                 """
-                archiveArtifacts artifacts: 'trivy-results/*.txt', fingerprint: true
+                archiveArtifacts artifacts: "${TRIVY_RESULTS_DIR}/*.txt", fingerprint: true
             }
         }
 
