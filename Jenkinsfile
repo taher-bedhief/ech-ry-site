@@ -85,7 +85,7 @@ pipeline {
                         git config user.email "tbedhief20@gmail.com"
 
                         if [ -f kubernetes/deployment.yaml ]; then
-                            sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" kubernetes/deployment.yaml
+                            sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" kubernetes/easyshop-deployment.yaml
                             git add kubernetes/deployment.yaml
                             git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}" || echo "No changes to commit"
                             git push https://${GIT_USER}:${GIT_PASS}@github.com/taher-bedhief/ech-ry-site.git ${GIT_BRANCH}
