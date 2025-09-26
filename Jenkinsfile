@@ -11,7 +11,6 @@ pipeline {
 
     options {
         timestamps()
-        ansiColor('xterm')
     }
 
     stages {
@@ -57,10 +56,12 @@ pipeline {
                 }
             }
             steps {
-                sh """
-                    npm install
-                    npm test
-                """
+                wrap([$class: 'AnsiColorBuildWrapper', colorMapName: 'xterm']) {
+                    sh """
+                        npm install
+                        npm test
+                    """
+                }
             }
         }
 
