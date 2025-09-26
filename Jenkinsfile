@@ -84,13 +84,15 @@ pipeline {
                         git config user.name "Jenkins CI"
                         git config user.email "tbedhief20@gmail.com"
 
-                        if [ -f kubernetes/deployment.yaml ]; then
-                            sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" kubernetes/easyshop-deployment.yaml
-                            git add kubernetes/deployment.yaml
+                        DEPLOYMENT_FILE="kubernetes/easyshop-deployment.yaml"
+
+                        if [ -f "$DEPLOYMENT_FILE" ]; then
+                            sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" "$DEPLOYMENT_FILE"
+                            git add "$DEPLOYMENT_FILE"
                             git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}" || echo "No changes to commit"
                             git push https://${GIT_USER}:${GIT_PASS}@github.com/taher-bedhief/ech-ry-site.git ${GIT_BRANCH}
                         else
-                            echo "Error: kubernetes/deployment.yaml not found!"
+                            echo "Error: $DEPLOYMENT_FILE not found!"
                             exit 1
                         fi
                     '''
