@@ -42,8 +42,17 @@ pipeline {
         }
 
         stage('Run Unit Tests') {
+            agent {
+                docker {
+                    image 'node:18-alpine'
+                    args '-u root'
+                }
+            }
             steps {
-                sh 'npm test'
+                sh """
+                    npm install
+                    npm test
+                """
             }
         }
 
@@ -54,6 +63,7 @@ pipeline {
                     trivy image ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > trivy-results/app.txt
                     trivy image ${DOCKER_MIGRATION_IMAGE_NAME}:${DOCKER_IMAGE_TAG} > trivy-results/migration.txt
                 """
+                archiveArtifacts artifacts: 'trivy-results/*.txt', fingerprint: true
             }
         }
 
@@ -96,6 +106,18 @@ pipeline {
                     """
                 }
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Pipeline terminé avec succès"
+        }
+        failure {
+            echo "Échec du pipeline"
+        }
+        always {
+            echo "Pipeline terminé (succès ou échec)"
         }
     }
 }
