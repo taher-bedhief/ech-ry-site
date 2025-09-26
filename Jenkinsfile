@@ -91,4 +91,11 @@ pipeline {
                             git push https://${GIT_USER}:${GIT_PASS}@github.com/taher-bedhief/ech-ry-site.git ${GIT_BRANCH}
                         else
                             echo "Error: kubernetes/deployment.yaml not found!"
-                            exit
+                            exit 1
+                        fi
+                    '''
+                }
+            }
+        }
+    }
+}
