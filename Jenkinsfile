@@ -84,7 +84,7 @@ pipeline {
                         git config user.name "Jenkins CI"
                         git config user.email "tbedhief20@gmail.com"
 
-                        DEPLOYMENT_FILE="kubernetes/08-easyshop-deployment.yaml"
+                        DEPLOYMENT_FILE="kubernetes/"
 
                         if [ -f "$DEPLOYMENT_FILE" ]; then
                             sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" "$DEPLOYMENT_FILE"
