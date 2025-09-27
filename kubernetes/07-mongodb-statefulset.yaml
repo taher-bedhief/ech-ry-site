@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: mongodb
-          image: taher2bedhief/echry-app:3
+          image: taher2bedhief/echry-app:4
           ports:
             - containerPort: 27017
           volumeMounts:
