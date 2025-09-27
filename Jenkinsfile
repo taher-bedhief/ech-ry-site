@@ -6,6 +6,8 @@ pipeline {
         DOCKER_MIGRATION_IMAGE_NAME = 'taher2bedhief/echry-migration'
         DOCKER_IMAGE_TAG = "${BUILD_NUMBER}"
         GIT_BRANCH = "main"
+        MONGODB_URI = "mongodb://dummy:27017/dummy" // Evite les erreurs pendant le build
+        NODE_ENV = "production"
     }
 
     stages {
@@ -26,7 +28,10 @@ pipeline {
                 stage('Build Main App Image') {
                     steps {
                         sh """
-                            docker build -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} -f Dockerfile .
+                            docker build \
+                            --build-arg MONGODB_URI=${MONGODB_URI} \
+                            -t ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} \
+                            -f Dockerfile .
                         """
                     }
                 }
@@ -84,22 +89,19 @@ pipeline {
                         git config user.name "Jenkins CI"
                         git config user.email "tbedhief20@gmail.com"
 
-                        # Dossier contenant tous les fichiers YAML
                         DEPLOYMENT_DIR="kubernetes/"
 
-                        if [ -d "$DEPLOYMENT_DIR" ]; then
-                            # Parcourt tous les fichiers YAML dans le dossier et sous-dossiers
-                            find "$DEPLOYMENT_DIR" -type f -name '*.yaml' | while read file; do
+                        # Parcourir tous les fichiers YAML contenant "image:"
+                        find "$DEPLOYMENT_DIR" -type f -name "*.yaml" | while read file; do
+                            if grep -q "image:" "$file"; then
                                 echo "Updating image in $file"
                                 sed -i "s|image: .*|image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}|" "$file"
                                 git add "$file"
-                            done
-                            git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}" || echo "No changes to commit"
-                            git push https://${GIT_USER}:${GIT_PASS}@github.com/taher-bedhief/ech-ry-site.git ${GIT_BRANCH}
-                        else
-                            echo "Error: $DEPLOYMENT_DIR not found!"
-                            exit 1
-                        fi
+                            fi
+                        done
+
+                        git commit -m "Update image tag to ${DOCKER_IMAGE_TAG}" || echo "No changes to commit"
+                        git push https://${GIT_USER}:${GIT_PASS}@github.com/taher-bedhief/ech-ry-site.git ${GIT_BRANCH}
                     '''
                 }
             }
