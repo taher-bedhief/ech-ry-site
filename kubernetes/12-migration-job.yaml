@@ -1,0 +1,19 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migration
+  namespace: echry
+spec: 
+  template:
+    spec:
+      containers:
+      - name: migration
+        image: taher2bedhief/echry-migration:latest
+        imagePullPolicy: Always
+        env:
+        - name: MONGODB_URI
+          valueFrom:
+            secretKeyRef:
+              name: secret
+              key: MONGO_URI
+      restartPolicy: OnFailure

@@ -1,0 +1,115 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echry
+  namespace: echry
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: echry
+  template:
+    metadata:
+      labels:
+        app: echry
+    spec:
+      containers:
+        - name: echry
+          image: taher2bedhief/echry-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: echry-config
+            - secretRef:
+                name: secret
+          env:
+            # MongoDB
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: MONGO_URI
+
+            # NextAuth
+            - name: NEXTAUTH_URL
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXTAUTH_URL
+            - name: NEXTAUTH_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXTAUTH_SECRET
+
+            # JWT
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: JWT_SECRET
+
+            # Public API
+            - name: NEXT_PUBLIC_API_URL
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_API_URL
+
+            # Cognito
+            - name: NEXT_PUBLIC_COGNITO_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_COGNITO_DOMAIN
+            - name: NEXT_PUBLIC_COGNITO_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_COGNITO_CLIENT_ID
+            - name: NEXT_PUBLIC_COGNITO_REDIRECT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_COGNITO_REDIRECT_URI
+            - name: NEXT_PUBLIC_COGNITO_LOGOUT_URI
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_COGNITO_LOGOUT_URI
+            - name: NEXT_PUBLIC_COGNITO_SCOPES
+              valueFrom:
+                secretKeyRef:
+                  name: secret
+                  key: NEXT_PUBLIC_COGNITO_SCOPES
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          startupProbe:
+            httpGet:
+              path: /
+              port: 3000
+            failureThreshold: 30
+            periodSeconds: 10
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 15
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 25
+            periodSeconds: 20
